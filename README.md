@@ -6,7 +6,34 @@
 
 <p align="center">Enterprise-grade SEO crawler built in Go. Single-binary CLI and web dashboard for technical SEO audits, content analysis, and internal link intelligence.</p>
 
+<p align="center">
+  <a href="https://github.com/jlhernando/micelio-crawler/releases/latest"><img src="https://img.shields.io/github/v/release/jlhernando/micelio-crawler" alt="Latest release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT license"></a>
+</p>
+
 ## Quick Start
+
+### Download a binary (recommended)
+
+Grab the latest release for your platform from the [releases page](https://github.com/jlhernando/micelio-crawler/releases/latest) — no build tools needed. Binaries are available for Linux (amd64/arm64), macOS (Intel/Apple Silicon), and Windows (amd64/arm64).
+
+```bash
+# macOS (Apple Silicon) example
+curl -LO https://github.com/jlhernando/micelio-crawler/releases/latest/download/micelio-darwin-arm64
+chmod +x micelio-darwin-arm64
+mv micelio-darwin-arm64 /usr/local/bin/micelio
+```
+
+> **Note (macOS):** binaries are unsigned. If Gatekeeper blocks the first run, clear the quarantine flag: `xattr -d com.apple.quarantine /usr/local/bin/micelio`.
+
+Verify a download against the release's `checksums.txt`:
+
+```bash
+curl -LO https://github.com/jlhernando/micelio-crawler/releases/latest/download/checksums.txt
+shasum -a 256 -c checksums.txt --ignore-missing
+```
+
+Once installed, the in-app updater keeps the binary current: it polls GitHub releases and verifies SHA256 checksums before applying an update.
 
 ### Install from source
 
@@ -229,11 +256,13 @@ micelio list urls.txt -c 10 --delay 100 -o results.jsonl
 
 ### sitemap
 
-Crawl all URLs found in XML sitemaps. Supports standard, news, video, and image extensions.
+Crawl all URLs found in XML sitemaps. Supports standard, news, video, and image extensions. Follows nested `<sitemapindex>` files and gzip-compressed sitemaps, and works when the sitemap is hosted on a different domain or CDN than the pages it lists (e.g. an S3-hosted sitemap). Crawls exactly the listed URLs — it does not spider out via on-page links.
 
 ```bash
 micelio sitemap https://example.com/sitemap.xml
 micelio sitemap https://example.com/sitemap.xml https://example.com/sitemap-news.xml -l 5000
+# Sitemap hosted on a CDN, pages on the main domain:
+micelio sitemap https://cdn.example.com/sitemaps/sitemap.xml
 ```
 
 ### head
@@ -425,6 +454,7 @@ document.querySelector('h1')?.textContent
 
 ### Sitemap Support
 - Standard, news, video, image XML sitemaps
+- Dedicated sitemap crawl mode that crawls exactly the listed URLs (nested `<sitemapindex>` + gzip; supports sitemaps hosted on a different domain/CDN than their pages; no spidering)
 - Automatic sitemap discovery from robots.txt during spider crawls
 - Orphan page detection from sitemap-discovered URLs
 - Sitemap generation from crawl results
